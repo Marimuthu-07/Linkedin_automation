@@ -1,0 +1,43 @@
+# Node & Dependencies
+node_modules/
+dist/
+build/
+.turbo/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Prisma & Database
+packages/database/prisma/*.db
+packages/database/prisma/*.db-journal
+packages/database/prisma/migrations/dev.db
+
+# IDE & OS
+.DS_Store
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+
+# Generated Prisma seed build artifacts
+packages/database/prisma/seed.js
+packages/database/prisma/seed.js.map
+packages/database/prisma/seed.d.ts
+packages/database/prisma/seed.d.ts.map

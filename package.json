@@ -1,0 +1,32 @@
+{
+  "name": "linkedin-growth-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal human-in-the-loop LinkedIn Growth & Productivity Assistant",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run dev --workspace=@linkedin-growth/api",
+    "dev:web": "npm run dev --workspace=@linkedin-growth/web",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present",
+    "db:generate": "npm run generate --workspace=@linkedin-growth/database",
+    "db:push": "npm run push --workspace=@linkedin-growth/database",
+    "db:migrate": "npm run migrate --workspace=@linkedin-growth/database",
+    "db:seed": "npm run seed --workspace=@linkedin-growth/database"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

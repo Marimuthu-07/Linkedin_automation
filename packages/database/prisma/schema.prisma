@@ -1,0 +1,251 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model UserSettings {
+  id                      String   @id @default(uuid())
+  userName                String   @default("Alex Chen")
+  userTitle               String   @default("Software Engineering Student | Full Stack & AI")
+  userBio                 String   @default("CS student passionate about high-performance web systems, distributed computing, and developer tooling.")
+  targetRoles             String[] @default(["Software Engineer", "Full Stack Engineer", "Backend Engineer", "AI Engineer"])
+  targetLocations         String[] @default(["San Francisco, CA", "New York, NY", "Remote", "Seattle, WA"])
+  targetTechnologies      String[] @default(["TypeScript", "React", "Node.js", "Python", "PostgreSQL", "Docker", "Next.js"])
+  minInternshipMatchScore Int      @default(70)
+  freelanceServices       String[] @default(["Website redesign", "AI-powered web apps", "Landing pages", "Performance optimization"])
+  aiProvider              String   @default("mock")
+  weeklyPostingGoal       Int      @default(3)
+  dailyNetworkingGoal     Int      @default(5)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model NetworkingContact {
+  id                String              @id @default(uuid())
+  name              String
+  linkedinUrl       String?
+  headline          String?
+  role              String?
+  company           String?
+  location          String?
+  category          String              @default("OTHER") // ContactCategory enum string
+  source            String              @default("Manual Entry")
+  relevanceReason   String?
+  notes             String?
+  messageDraft      String?
+  status            String              @default("DISCOVERED") // NetworkingStatus enum string
+  lastInteractionAt DateTime?
+  nextFollowUpAt    DateTime?
+  messages          NetworkingMessage[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([nextFollowUpAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model NetworkingMessage {
+  id                   String            @id @default(uuid())
+  contactId            String
+  contact              NetworkingContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  type                 String            @default("CONNECTION_REQUEST") // NetworkingMessageType enum string
+  content              String
+  personalizationBasis String[]          @default([])
+  status               String            @default("DRAFT") // NetworkingMessageStatus enum string
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@index([contactId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+
+model ContentPost {
+  id                String            @id @default(uuid())
+  title             String            @default("")
+  idea              String?
+  hook              String            @default("")
+  body              String            @default("")
+  cta               String?
+  category          String            @default("SOFTWARE_ENGINEERING") // ContentCategory enum string
+  status            String            @default("IDEA") // ContentStatus enum string
+  targetAudience    String?
+  tone              String?
+  hashtags          String[]          @default([])
+  tags              String[]          @default([])
+  sourceContext     String?
+  scheduledAt       DateTime?
+  publishedAt       DateTime?
+  publishedManually Boolean           @default(false)
+  externalPostUrl   String?
+  generationPrompt  String?
+  aiGenerated       Boolean           @default(false)
+  aiProvider        String?
+  aiModel           String?
+  revisionCount     Int               @default(1)
+  notes             String?
+  alternativeHooks  String[]          @default([])
+  revisions         ContentRevision[]
+  metrics           ContentMetric[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([scheduledAt])
+  @@index([publishedAt])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model ContentRevision {
+  id             String      @id @default(uuid())
+  contentPostId  String
+  contentPost    ContentPost @relation(fields: [contentPostId], references: [id], onDelete: Cascade)
+  title          String
+  hook           String
+  body           String
+  cta            String?
+  hashtags       String[]    @default([])
+  revisionNumber Int
+  createdBy      String      @default("USER")
+  createdAt      DateTime    @default(now())
+
+  @@index([contentPostId])
+  @@index([createdAt])
+}
+
+model ContentMetric {
+  id                     String      @id @default(uuid())
+  postId                 String
+  post                   ContentPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  impressions            Int         @default(0)
+  reactions              Int         @default(0)
+  comments               Int         @default(0)
+  reposts                Int         @default(0)
+  clicks                 Int         @default(0)
+  engagementRate         Float?
+  followersAtPublication Int?
+  recordedAt             DateTime    @default(now())
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+
+  @@index([postId])
+  @@index([recordedAt])
+  @@index([engagementRate])
+  @@index([createdAt])
+}
+
+
+model AnalyticsSnapshot {
+  id             String   @id @default(uuid())
+  date           String   @unique // YYYY-MM-DD
+  followers      Int      @default(0)
+  connections    Int      @default(0)
+  profileViews   Int      @default(0)
+  impressions    Int      @default(0)
+  reactions      Int      @default(0)
+  comments       Int      @default(0)
+  reposts        Int      @default(0)
+  clicks         Int      @default(0)
+  engagementRate Float?
+  createdAt      DateTime @default(now())
+
+  @@index([date])
+  @@index([createdAt])
+}
+
+model Lead {
+  id                     String   @id @default(uuid())
+  company                String
+  website                String
+  industry               String
+  location               String?
+  contactName            String?
+  contactRole            String?
+  linkedinUrl            String?
+  companyLinkedinUrl     String?
+  source                 String   @default("Manual Research")
+  problem                String
+  opportunity            String
+  qualificationScore     Int      @default(50)
+  qualificationBreakdown Json?
+  status                 String   @default("DISCOVERED") // LeadStatus enum string
+  notes                  String?
+  outreachDraft          String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@index([status])
+  @@index([qualificationScore])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model Internship {
+  id           String    @id @default(uuid())
+  company      String
+  role         String
+  location     String
+  remote       Boolean   @default(false)
+  url          String
+  source       String    @default("Company Career Page")
+  description  String
+  skills       String[]  @default([])
+  eligibility  String    @default("Open to all qualified students")
+  deadline     DateTime?
+  postedAt     DateTime?
+  discoveredAt DateTime  @default(now())
+  matchScore   Int       @default(50)
+  matchReasons String[]  @default([])
+  status       String    @default("NEW") // InternshipStatus enum string
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([status])
+  @@index([matchScore])
+  @@index([deadline])
+  @@index([createdAt])
+}
+
+model Task {
+  id                String    @id @default(uuid())
+  title             String
+  description       String?
+  type              String    @default("GENERAL") // TaskType enum string
+  dueAt             DateTime?
+  priority          String    @default("MEDIUM") // TaskPriority enum string
+  status            String    @default("TODO") // TaskStatus enum string
+  relatedEntityType String?
+  relatedEntityId   String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([priority])
+  @@index([dueAt])
+}
+
+model Notification {
+  id                String   @id @default(uuid())
+  type              String   @default("GENERAL") // NotificationType enum string
+  title             String
+  message           String
+  read              Boolean  @default(false)
+  linkUrl           String?
+  relatedEntityType String?
+  relatedEntityId   String?
+  createdAt         DateTime @default(now())
+
+  @@index([read])
+  @@index([createdAt])
+}
