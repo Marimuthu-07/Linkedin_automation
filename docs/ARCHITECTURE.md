@@ -104,12 +104,35 @@ graph TD
 
 ---
 
-## 4. Monorepo Structure
+## 4. Analytics Engine Architecture (Phase 4)
+
+### Data Provenance & Grounding Principles
+The Analytics Engine aggregates metrics strictly from local PostgreSQL records created through manual user logging and verified lifecycle transitions:
+- **Zero LinkedIn Scraping or API Impersonation**: All post reach numbers (impressions, reactions, comments, reposts, clicks) originate from explicit, user-entered `ContentMetric` snapshots.
+- **No Arbitrary "Growth Scores"**: The engine produces explainable, deterministic mathematical metrics and transparent period-over-period comparisons rather than black-box AI scores.
+- **No Fabrication**: If data is missing (e.g. 0 impressions or unrecorded responses), metrics safely return `null` or `0` rather than estimating or inventing values.
+
+### Time-Series Bucketing & Period Comparison Logic
+1. **Contiguous Period Bounds (`getDateRangeForPeriod`)**: Computes exact `startDate` and `endDate` boundaries for `7d`, `30d`, `90d`, `1y`, or `custom` ranges.
+2. **Equal-Duration Preceding Baseline**: Concurrently calculates an equal-length baseline period (`prevStartDate` to `prevEndDate`) immediately preceding the current period window for period-over-period delta comparisons.
+3. **Aggregation Bucketing (`formatBucketKey`)**: Groups timeline metrics by `day` (`YYYY-MM-DD`), `week` (`YYYY-MM-DD` starting on Monday), or `month` (`YYYY-MM`).
+4. **Timezone-Safe Date Keys**: Date keys are extracted using local calendar date formatting (`formatDateKey`) to avoid off-by-one shifts caused by UTC conversions.
+
+### Deterministic Insights Engine
+The `generateDeterministicInsights` function synthesizes rule-based findings directly from mathematical deltas:
+- **Reach Trends**: Identifies percentage changes in reach compared against baseline.
+- **Top Topics**: Identifies highest-engagement content categories with exact average engagement rates.
+- **Follow-Up Warnings**: Flags active follow-up counts requiring user attention.
+- **Pipeline Activity**: Summarizes qualified leads and upcoming internship deadlines within 14 days.
+
+---
+
+## 5. Monorepo Structure
 
 ```
 root/
 ├── apps/
-│   ├── web/                     # React 18 + Vite + Tailwind CSS + Lucide Icons
+│   ├── web/                     # React 18 + Vite + Tailwind CSS + Lucide Icons + SVG Charts
 │   └── api/                     # Node.js + Express 5 + TypeScript + Zod + Prisma
 │
 ├── packages/
@@ -123,7 +146,7 @@ root/
 
 ---
 
-## 5. Data Storage & Ownership
+## 6. Data Storage & Ownership
 
 LinkedIn is **not** the application database. The application maintains an independent, structured database tracking:
 1. **Content CMS**: Technical post ideas, hooks, body drafts, approval status, internal schedule dates, revision history, and performance metric snapshots.
@@ -134,11 +157,15 @@ LinkedIn is **not** the application database. The application maintains an indep
 
 ---
 
-## 6. Transparent Scoring Formulas
+## 7. Transparent Scoring Formulas
 
 ### Engagement Rate:
 $$\text{Engagement Rate (\%)} = \frac{\text{Reactions} + \text{Comments} + \text{Reposts} + \text{Clicks}}{\text{Impressions}} \times 100$$
 *Returns `null` when Impressions $\le 0$ to prevent division by zero.*
+
+### Period-over-Period Percentage Change:
+$$\text{Percentage Change (\%)} = \frac{\text{Current Value} - \text{Previous Value}}{\text{Previous Value}} \times 100$$
+*Returns `0` when both values are 0; returns `null` when Previous is 0 and Current > 0.*
 
 ### Lead Qualification Scoring:
 Calculated deterministically from explicit audit factors (UX, Mobile Responsiveness, Page Speed, CTA Visibility, Funnel Friction) and weighted service fit.

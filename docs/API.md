@@ -142,10 +142,30 @@ All endpoints are prefixed with `/api`. All inputs are strictly validated agains
 
 ---
 
-## Analytics (`/api/analytics`)
-- `GET /api/analytics/snapshots?days=30`: Retrieve historical metrics snapshots.
-- `POST /api/analytics/snapshots`: Record snapshot with engagement rate calculation.
-- `GET /api/analytics/content-performance`: Retrieve ranked post performance metrics.
+## Analytics Engine (`/api/analytics`)
+
+The Phase 4 Analytics Engine provides production-grade, explainable aggregations, time-series trends, deterministic insights, and period-over-period comparisons across Content, Networking, Leads, and Internships. All metrics are computed strictly from local database records.
+
+### Query Parameters (Zod-validated)
+- `period`: `7d` | `30d` | `90d` | `1y` | `custom` (default: `30d`)
+- `startDate`: ISO 8601 date string or `YYYY-MM-DD` (required when `period=custom`)
+- `endDate`: ISO 8601 date string or `YYYY-MM-DD` (required when `period=custom`)
+- `groupBy`: `day` | `week` | `month` (default: `day`, supported on `/trends` endpoints)
+
+### Endpoints
+- `GET /api/analytics/definitions`: Returns the official dictionary of transparent metric definitions and calculation formulas.
+- `GET /api/analytics/overview`: Aggregated cross-domain KPI overview with period-over-period comparisons (`MetricComparison`) and deterministic insights.
+- `GET /api/analytics/content`: Content metrics summary (posts by status, posts by category, total reach, impressions/interactions comparisons, category performance rankings, top-performing posts).
+- `GET /api/analytics/content/trends`: Time-series bucketed data points for content activity (posts published, impressions, reactions, comments, reposts, clicks, engagement rates over time).
+- `GET /api/analytics/networking`: Networking pipeline analytics (contacts by status, contacts by category, interactions comparison, follow-up backlog count, response rates).
+- `GET /api/analytics/networking/trends`: Time-series bucketed touchpoint metrics (contacts added, messages logged, status transitions over time).
+- `GET /api/analytics/leads`: Freelance lead conversion metrics (leads by status, leads by source, leads by service type, qualification score distribution, conversion funnel).
+- `GET /api/analytics/leads/trends`: Time-series bucketed lead acquisition and qualification volume over time.
+- `GET /api/analytics/internships`: Internship tracking metrics (opportunities by status, opportunities by source, high-match counts, upcoming application deadlines).
+- `GET /api/analytics/internships/trends`: Time-series bucketed opportunity tracking and application submissions over time.
+- `GET /api/analytics/snapshots?days=30`: Retrieve legacy profile snapshot records.
+- `POST /api/analytics/snapshots`: Record a manual follower/connection snapshot.
+- `GET /api/analytics/content-performance`: Legacy ranked list of content performance snapshots.
 
 ---
 

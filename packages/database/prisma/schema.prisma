@@ -47,6 +47,7 @@ model NetworkingContact {
   @@index([status])
   @@index([category])
   @@index([nextFollowUpAt])
+  @@index([lastInteractionAt])
   @@index([createdAt])
   @@index([updatedAt])
 }
@@ -186,6 +187,7 @@ model Lead {
 
   @@index([status])
   @@index([qualificationScore])
+  @@index([source])
   @@index([createdAt])
   @@index([updatedAt])
 }
@@ -212,6 +214,7 @@ model Internship {
 
   @@index([status])
   @@index([matchScore])
+  @@index([source])
   @@index([deadline])
   @@index([createdAt])
 }

@@ -19,23 +19,28 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { api } from '../lib/api.js';
-import { DashboardOverview, Task, TaskStatus } from '@linkedin-growth/shared';
+import { DashboardOverview, Task, TaskStatus, AnalyticsOverview } from '@linkedin-growth/shared';
 import { StatsCard } from '../components/common/StatsCard.js';
 import { Badge } from '../components/common/Badge.js';
 import { formatDate } from '../lib/utils.js';
 
 export const DashboardPage: React.FC = () => {
   const [data, setData] = useState<DashboardOverview | null>(null);
+  const [analyticsOverview, setAnalyticsOverview] = useState<AnalyticsOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
 
   const fetchDashboard = () => {
     setLoading(true);
-    api.getDashboardOverview()
-      .then((res) => {
-        setData(res);
-        setTasks(res.todayActions || []);
+    Promise.all([
+      api.getDashboardOverview(),
+      api.getAnalyticsOverview({ period: '7d' }),
+    ])
+      .then(([dashRes, analyticsRes]) => {
+        setData(dashRes);
+        setAnalyticsOverview(analyticsRes);
+        setTasks(dashRes.todayActions || []);
         setError(null);
       })
       .catch((err) => {
@@ -144,6 +149,17 @@ export const DashboardPage: React.FC = () => {
             subtitle={`${data?.networking.followUpsDueCount || 0} follow-ups due`}
             icon={Users}
             colorScheme="indigo"
+            trend={
+              analyticsOverview?.networking.contactsComparison
+                ? {
+                    value:
+                      analyticsOverview.networking.contactsComparison.percentageChange !== null
+                        ? `${analyticsOverview.networking.contactsComparison.percentageChange >= 0 ? '+' : ''}${analyticsOverview.networking.contactsComparison.percentageChange}%`
+                        : `+${analyticsOverview.networking.contactsComparison.current} new`,
+                    positive: (analyticsOverview.networking.contactsComparison.percentageChange || 0) >= 0,
+                  }
+                : undefined
+            }
           />
           <StatsCard
             title="Content Queue"
@@ -151,6 +167,17 @@ export const DashboardPage: React.FC = () => {
             subtitle={`${data?.content.scheduledPostsCount || 0} scheduled (manual)`}
             icon={PenSquare}
             colorScheme="purple"
+            trend={
+              analyticsOverview?.content.impressionsComparison
+                ? {
+                    value:
+                      analyticsOverview.content.impressionsComparison.percentageChange !== null
+                        ? `${analyticsOverview.content.impressionsComparison.percentageChange >= 0 ? '+' : ''}${analyticsOverview.content.impressionsComparison.percentageChange}%`
+                        : `+${analyticsOverview.content.impressionsComparison.current} views`,
+                    positive: (analyticsOverview.content.impressionsComparison.percentageChange || 0) >= 0,
+                  }
+                : undefined
+            }
           />
           <StatsCard
             title="Freelance Leads"
@@ -158,6 +185,17 @@ export const DashboardPage: React.FC = () => {
             subtitle={`${data?.leads.qualifiedLeadsCount || 0} qualified opportunities`}
             icon={Briefcase}
             colorScheme="emerald"
+            trend={
+              analyticsOverview?.leads.leadsComparison
+                ? {
+                    value:
+                      analyticsOverview.leads.leadsComparison.percentageChange !== null
+                        ? `${analyticsOverview.leads.leadsComparison.percentageChange >= 0 ? '+' : ''}${analyticsOverview.leads.leadsComparison.percentageChange}%`
+                        : `+${analyticsOverview.leads.leadsComparison.current} new`,
+                    positive: (analyticsOverview.leads.leadsComparison.percentageChange || 0) >= 0,
+                  }
+                : undefined
+            }
           />
           <StatsCard
             title="Internships"
@@ -165,6 +203,17 @@ export const DashboardPage: React.FC = () => {
             subtitle={`${data?.internships.highMatchCount || 0} score > 80%`}
             icon={GraduationCap}
             colorScheme="cyan"
+            trend={
+              analyticsOverview?.internships.internshipsComparison
+                ? {
+                    value:
+                      analyticsOverview.internships.internshipsComparison.percentageChange !== null
+                        ? `${analyticsOverview.internships.internshipsComparison.percentageChange >= 0 ? '+' : ''}${analyticsOverview.internships.internshipsComparison.percentageChange}%`
+                        : `+${analyticsOverview.internships.internshipsComparison.current} new`,
+                    positive: (analyticsOverview.internships.internshipsComparison.percentageChange || 0) >= 0,
+                  }
+                : undefined
+            }
           />
           <StatsCard
             title="Analytics"

@@ -12,6 +12,8 @@ import {
   TaskStatus,
   TaskPriority,
   NotificationType,
+  AnalyticsPeriod,
+  AnalyticsGroupBy,
 } from '../types/enums.js';
 
 // URL validator that accepts valid http/https URLs or linkedin.com URLs
@@ -365,4 +367,20 @@ export const generateLeadOutreachOutputSchema = z.object({
   valueProposition: z.string(),
   closingQuestion: z.string(),
   fullDraft: z.string(),
+});
+
+// Analytics Query Schemas
+export const analyticsQuerySchema = z.object({
+  period: z.nativeEnum(AnalyticsPeriod).default(AnalyticsPeriod.THIRTY_DAYS),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  category: z.string().optional(),
+});
+
+export const analyticsTrendsQuerySchema = z.object({
+  period: z.nativeEnum(AnalyticsPeriod).default(AnalyticsPeriod.THIRTY_DAYS),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  groupBy: z.nativeEnum(AnalyticsGroupBy).default(AnalyticsGroupBy.DAY),
+  category: z.string().optional(),
 });

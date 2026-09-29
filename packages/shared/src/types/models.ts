@@ -11,6 +11,8 @@ import {
   TaskStatus,
   TaskPriority,
   NotificationType,
+  AnalyticsPeriod,
+  AnalyticsGroupBy,
 } from './enums.js';
 
 export interface NetworkingMessage {
@@ -291,4 +293,202 @@ export interface DashboardOverview {
   };
   todayActions: Task[];
   recentNotifications: NotificationItem[];
+}
+
+export interface MetricComparison {
+  current: number;
+  previous: number;
+  absoluteChange: number;
+  percentageChange: number | null; // null when previous is 0 and cannot divide
+}
+
+export interface MetricDefinition {
+  name: string;
+  description: string;
+  formula: string;
+  numerator: string;
+  denominator: string;
+  period: string;
+  nullHandling: string;
+  metricType: 'count' | 'average' | 'percentage' | 'rate';
+}
+
+export interface ContentTrendPoint {
+  date: string;
+  postsPublished: number;
+  impressions: number;
+  reactions: number;
+  comments: number;
+  reposts: number;
+  clicks: number;
+  engagementRate: number | null;
+}
+
+export interface CategoryPerformance {
+  category: ContentCategory | string;
+  postCount: number;
+  publishedCount: number;
+  totalImpressions: number;
+  totalInteractions: number;
+  avgEngagementRate: number | null;
+}
+
+export interface ContentAnalytics {
+  period: AnalyticsPeriod | string;
+  startDate: string;
+  endDate: string;
+  totalPosts: number;
+  postsByStatus: Record<string, number>;
+  postsByCategory: Record<string, number>;
+  publishedPostsCount: number;
+  totalImpressions: number;
+  totalReactions: number;
+  totalComments: number;
+  totalReposts: number;
+  totalClicks: number;
+  avgEngagementRate: number | null;
+  avgImpressionsPerPost: number;
+  topPostsByImpressions: ContentPost[];
+  topPostsByEngagementRate: ContentPost[];
+  topPostsByComments: ContentPost[];
+  categoryBreakdown: CategoryPerformance[];
+  comparison: {
+    impressions: MetricComparison;
+    interactions: MetricComparison;
+    postsPublished: MetricComparison;
+    avgEngagementRate: MetricComparison;
+  };
+}
+
+export interface NetworkingTrendPoint {
+  date: string;
+  contactsAdded: number;
+  interactionsLogged: number;
+  connectionRequestsDrafted: number;
+}
+
+export interface NetworkingAnalytics {
+  period: AnalyticsPeriod | string;
+  startDate: string;
+  endDate: string;
+  totalContacts: number;
+  contactsByStatus: Record<string, number>;
+  contactsByCategory: Record<string, number>;
+  contactsBySource: Record<string, number>;
+  contactsAddedInPeriod: number;
+  interactionsInPeriod: number;
+  followUpsDueToday: number;
+  followUpsOverdue: number;
+  followUpsUpcoming7Days: number;
+  followUpsCompleted: number;
+  connectionRequestsCount: number;
+  responseCount: number;
+  responseRate: number | null;
+  comparison: {
+    contactsAdded: MetricComparison;
+    interactions: MetricComparison;
+  };
+}
+
+export interface LeadFunnelStage {
+  status: LeadStatus | string;
+  count: number;
+  percentageOfTotal: number;
+}
+
+export interface LeadTrendPoint {
+  date: string;
+  leadsCreated: number;
+  leadsQualified: number;
+  leadsContacted: number;
+}
+
+export interface LeadAnalytics {
+  period: AnalyticsPeriod | string;
+  startDate: string;
+  endDate: string;
+  totalLeads: number;
+  leadsByStatus: Record<string, number>;
+  leadsBySource: Record<string, number>;
+  leadsByServiceFit: Record<string, number>;
+  leadsCreatedInPeriod: number;
+  qualifiedLeadsCount: number;
+  contactedLeadsCount: number;
+  avgQualificationScore: number;
+  pipelineFunnel: LeadFunnelStage[];
+  comparison: {
+    leadsCreated: MetricComparison;
+    leadsQualified: MetricComparison;
+  };
+}
+
+export interface InternshipTrendPoint {
+  date: string;
+  opportunitiesDiscovered: number;
+}
+
+export interface InternshipAnalytics {
+  period: AnalyticsPeriod | string;
+  startDate: string;
+  endDate: string;
+  totalOpportunities: number;
+  opportunitiesByStatus: Record<string, number>;
+  opportunitiesBySource: Record<string, number>;
+  opportunitiesByCompany: Array<{ company: string; count: number }>;
+  opportunitiesAddedInPeriod: number;
+  avgMatchScore: number;
+  highMatchCount: number;
+  upcomingDeadlines: Internship[];
+  comparison: {
+    opportunitiesDiscovered: MetricComparison;
+  };
+}
+
+export interface DeterministicInsight {
+  id: string;
+  domain: 'CONTENT' | 'NETWORKING' | 'LEADS' | 'INTERNSHIPS' | 'GENERAL';
+  title: string;
+  message: string;
+  type: 'positive' | 'neutral' | 'attention';
+  change?: MetricComparison | null;
+}
+
+export interface AnalyticsOverview {
+  period: AnalyticsPeriod | string;
+  startDate: string;
+  endDate: string;
+  content: {
+    totalPosts: number;
+    publishedInPeriod: number;
+    totalImpressions: number;
+    totalInteractions: number;
+    avgEngagementRate: number | null;
+    impressionsComparison: MetricComparison;
+    interactionsComparison: MetricComparison;
+  };
+  networking: {
+    totalContacts: number;
+    addedInPeriod: number;
+    followUpsDueCount: number;
+    interactionsInPeriod: number;
+    contactsComparison: MetricComparison;
+    interactionsComparison: MetricComparison;
+  };
+  leads: {
+    totalLeads: number;
+    createdInPeriod: number;
+    qualifiedCount: number;
+    activePipelineCount: number;
+    leadsComparison: MetricComparison;
+  };
+  internships: {
+    totalTracked: number;
+    addedInPeriod: number;
+    highMatchCount: number;
+    upcomingDeadlinesCount: number;
+    internshipsComparison: MetricComparison;
+  };
+  latestSnapshot: AnalyticsSnapshot | null;
+  snapshots: AnalyticsSnapshot[];
+  insights: DeterministicInsight[];
 }

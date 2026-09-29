@@ -84,7 +84,7 @@ npm run dev:web   # Web: http://localhost:5173
 ## 🧪 Testing, Linting & Type Checking
 
 ```bash
-# Run all unit and integration tests across workspaces (89 tests)
+# Run all unit and integration tests across workspaces (132 tests)
 npm run test
 
 # Run TypeScript typechecks across all workspaces
@@ -101,7 +101,7 @@ npm run build
 
 ## 📊 Completed Modules
 
-1. **Overview Dashboard (Phase 1 Complete & Verified)**: Unified KPIs across networking, content, leads, internships, analytics, plus an interactive "Today's Actions" checklist and upcoming post countdowns.
+1. **Overview Dashboard (Phase 1 & Phase 4 Enhanced)**: Unified KPIs across networking, content, leads, internships, analytics, period-over-period delta badges (`MetricDeltaBadge`), deterministic insight banners, interactive "Today's Actions" checklist, and upcoming post countdowns.
 2. **Networking Pipeline (Phase 2 Complete & Verified)**:
    - Full 8-stage HITL workflow: `DISCOVER ➔ REVIEW ➔ APPROVE ➔ DRAFT MESSAGE ➔ USER REVIEWS ➔ USER MANUALLY CONTACTS ➔ CONTACTED ➔ REPLIED / FOLLOW_UP ➔ CONNECTED / ARCHIVED`
    - Strict state-machine transition map preventing invalid jumps (with HTTP 400 validation).
@@ -123,7 +123,13 @@ npm run build
    - Content Calendar with Month, Week, and Upcoming list views (supports scheduling, rescheduling, unscheduling).
    - Manual Publishing Workflow with explicit external LinkedIn launcher and post URL recorder (`[Open LinkedIn] ➔ [Mark as Published]`).
    - Multi-snapshot Performance Metric Tracker (`ContentMetric` table) recording timestamped impressions, reactions, comments, reposts, clicks, and calculated engagement rates over time.
-4. **Growth Analytics**: 30-day historical reach chart, transparent engagement rate calculations, and post rankings with explicit metric labels.
+4. **Analytics Engine (Phase 4 Complete & Verified)**:
+   - **Multi-Domain Analytics Hub**: Full-fidelity analytics across Content reach, Networking touchpoints, Freelance Leads pipeline, and Internship opportunities.
+   - **Date Range Filters & Baseline Comparisons**: Quick presets (`7D`, `30D`, `90D`, `1Y`) and Custom Date Range picker with contiguous equal-duration baseline comparisons.
+   - **Deterministic Insights Engine**: 100% grounded arithmetic insights (reach growth/dip, networking pacing, follow-up alerts, top content categories, lead qualifications, deadline alerts) without arbitrary AI scores.
+   - **Interactive Visualizations**: Zero-dependency SVG time-series charts (area and bar charts with hover tooltips), category distribution bars, and funnel breakdowns.
+   - **Explainable Metric Explainer Modal**: In-app transparency modal inspecting formulas, numerators, denominators, and null-handling rules.
+   - **Zero Scraping & High Integrity**: All metrics derive strictly from locally stored database records and manual logging.
 5. **Freelance Leads**: Transparent qualification breakdown (UX, Mobile, Performance, CTA, Conversion) and personalized value pitch generator.
 6. **Internship Intelligence**: Official opening monitor with profile match scoring, deadline alerts, and direct career portal links.
 7. **Unified Tasks**: Centralized task queue across all growth workflows.
@@ -136,6 +142,10 @@ npm run build
 ### Engagement Rate:
 $$\text{Engagement Rate (\%)} = \frac{\text{Reactions} + \text{Comments} + \text{Reposts} + \text{Clicks}}{\text{Impressions}} \times 100$$
 *(Safely returns `null` when impressions $\le 0$)*
+
+### Period-over-Period Percentage Change:
+$$\text{Percentage Change (\%)} = \frac{\text{Current Value} - \text{Previous Value}}{\text{Previous Value}} \times 100$$
+*(Safely returns `null` when Previous is 0 and Current > 0)*
 
 ---
 

@@ -14,6 +14,16 @@ import {
   Task,
   NotificationItem,
   UserSettings,
+  AnalyticsOverview,
+  ContentAnalytics,
+  ContentTrendPoint,
+  NetworkingAnalytics,
+  NetworkingTrendPoint,
+  LeadAnalytics,
+  LeadTrendPoint,
+  InternshipAnalytics,
+  InternshipTrendPoint,
+  MetricDefinition,
 } from '@linkedin-growth/shared';
 
 const API_BASE = '/api';
@@ -222,6 +232,44 @@ export const api = {
     request<{ id: string }>(`/internships/${id}`, { method: 'DELETE' }),
 
   // Analytics
+  getAnalyticsOverview: (params?: { period?: string; startDate?: string; endDate?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<AnalyticsOverview>(`/analytics/overview${query ? `?${query}` : ''}`);
+  },
+  getContentAnalytics: (params?: { period?: string; startDate?: string; endDate?: string; category?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<ContentAnalytics>(`/analytics/content${query ? `?${query}` : ''}`);
+  },
+  getContentTrends: (params?: { period?: string; startDate?: string; endDate?: string; groupBy?: string; category?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<ContentTrendPoint[]>(`/analytics/content/trends${query ? `?${query}` : ''}`);
+  },
+  getNetworkingAnalytics: (params?: { period?: string; startDate?: string; endDate?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<NetworkingAnalytics>(`/analytics/networking${query ? `?${query}` : ''}`);
+  },
+  getNetworkingTrends: (params?: { period?: string; startDate?: string; endDate?: string; groupBy?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<NetworkingTrendPoint[]>(`/analytics/networking/trends${query ? `?${query}` : ''}`);
+  },
+  getLeadAnalytics: (params?: { period?: string; startDate?: string; endDate?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<LeadAnalytics>(`/analytics/leads${query ? `?${query}` : ''}`);
+  },
+  getLeadTrends: (params?: { period?: string; startDate?: string; endDate?: string; groupBy?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<LeadTrendPoint[]>(`/analytics/leads/trends${query ? `?${query}` : ''}`);
+  },
+  getInternshipAnalytics: (params?: { period?: string; startDate?: string; endDate?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<InternshipAnalytics>(`/analytics/internships${query ? `?${query}` : ''}`);
+  },
+  getInternshipTrends: (params?: { period?: string; startDate?: string; endDate?: string; groupBy?: string }) => {
+    const query = new URLSearchParams(params as any).toString();
+    return request<InternshipTrendPoint[]>(`/analytics/internships/trends${query ? `?${query}` : ''}`);
+  },
+  getMetricDefinitions: () =>
+    request<{ metrics: Record<string, MetricDefinition>; dataProvenance: string }>('/analytics/definitions'),
   getAnalyticsSnapshots: (days: number = 30) =>
     request<AnalyticsSnapshot[]>(`/analytics/snapshots?days=${days}`),
   recordAnalyticsSnapshot: (data: any) =>
@@ -235,6 +283,7 @@ export const api = {
       categoryStats: Array<{ category: string; postCount: number; totalImpressions: number; avgEngagementRate: number | null }>;
       formulaExplanation: string;
     }>('/analytics/content-performance'),
+
 
   // Tasks
   getTasks: (params?: { status?: string; type?: string; priority?: string; dueToday?: string }) => {
