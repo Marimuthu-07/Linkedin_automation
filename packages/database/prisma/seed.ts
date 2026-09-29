@@ -11,6 +11,7 @@ async function main() {
   await prisma.contentPost.deleteMany();
   await prisma.networkingMessage.deleteMany();
   await prisma.networkingContact.deleteMany();
+  await prisma.leadInteraction.deleteMany();
   await prisma.lead.deleteMany();
   await prisma.internship.deleteMany();
   await prisma.task.deleteMany();
@@ -545,7 +546,7 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
   }
 
 
-  // 5. Seed 5 Freelance / Client Leads with Transparent Qualification Breakdown
+  // 5. Seed Realistic Freelance / Client Leads with Structured Audit Breakdown, Variants, Follow-ups, and Interactions
   const leadsData = [
     {
       company: 'Nordic Artisan Coffee Co. (DEMO)',
@@ -559,7 +560,7 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
       source: 'Local Business Directory Audit',
       problem: 'Mobile checkout page takes 5.8s to load on 4G networks with severe CLS (layout shifts) and buried "Subscribe" CTA.',
       opportunity: 'Modern headless Shopify or Next.js storefront rebuild with instant sub-second page transitions and streamlined mobile subscription flow.',
-      qualificationScore: 82,
+      qualificationScore: 68,
       qualificationBreakdown: {
         websiteUxScore: 5,
         mobileExperienceScore: 4,
@@ -574,10 +575,44 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
           'Weak conversion funnel with high user checkout friction',
           'Strong match for web application / redesign services',
         ],
-        totalScore: 82,
+        totalScore: 68,
       },
       status: 'QUALIFIED',
-      outreachDraft: `Hi Lars,\n\nI was admiring Nordic Artisan Coffee's single-origin roasts earlier today. While browsing your shop on mobile, I noticed the checkout navigation takes ~5.8s to transition, with several layout shifts that push the subscription toggle out of view.\n\nI recently engineered a lightweight Next.js commerce template that achieves sub-second page transitions and improved mobile checkout conversion by 28% for a similar specialty brand.\n\nWould you be open to a quick 5-minute Loom video walking through 3 specific high-impact frontend fixes you can implement?`,
+      nextFollowUpAt: new Date(), // Due Today
+      lastInteractionAt: new Date(Date.now() - 2 * 86400000),
+      outreachDraft: `Hi Lars,\n\nI was admiring Nordic Artisan Coffee's single-origin roasts earlier today. While browsing your shop on mobile, I noticed the checkout navigation takes ~5.8s to transition, with several layout shifts that push the subscription toggle out of view.\n\nI recently engineered a lightweight Next.js commerce template that achieves sub-second page transitions and improved mobile checkout conversion by 28% for a similar specialty brand.\n\nWould you be open to a quick 3-minute Loom video walking through 3 specific high-impact frontend fixes you can implement?`,
+      outreachVariants: [
+        {
+          type: 'CONNECTION',
+          body: 'Hi Lars, noticed Nordic Coffee while auditing specialty e-commerce performance. Spotted a quick fix for mobile checkout layout shifts. Would love to connect!',
+          personalizationBasis: ['Company: Nordic Artisan Coffee', 'Contact: Lars Lindqvist', 'Observed Problem: 5.8s mobile checkout latency'],
+          status: 'DRAFT',
+        },
+        {
+          type: 'SHORT',
+          body: 'Hi Lars,\n\nI was analyzing Nordic Coffee\'s mobile shop and noticed checkout takes ~5.8s with noticeable layout shifts.\n\nWe recently tackled a similar bottleneck using Next.js commerce, lifting mobile checkout conversion by 28%.\n\nWould you be open to a 3-minute video breakdown of 3 quick fixes?',
+          personalizationBasis: ['Company: Nordic Artisan Coffee', 'Contact: Lars Lindqvist', 'Observed Problem: 5.8s mobile checkout latency', 'Opportunity: Next.js rebuild'],
+          status: 'DRAFT',
+        },
+        {
+          type: 'DETAILED',
+          body: `Hi Lars,\n\nI was admiring Nordic Artisan Coffee's single-origin roasts earlier today. While browsing your shop on mobile, I noticed the checkout navigation takes ~5.8s to transition, with several layout shifts that push the subscription toggle out of view.\n\nI recently engineered a lightweight Next.js commerce template that achieves sub-second page transitions and improved mobile checkout conversion by 28% for a similar specialty brand.\n\nWould you be open to a quick 3-minute Loom video walking through 3 specific high-impact frontend fixes you can implement?`,
+          personalizationBasis: ['Company: Nordic Artisan Coffee', 'Contact: Lars Lindqvist', 'Website: demo-nordiccoffeeroasters.com', 'Observed Problem: 5.8s mobile checkout latency', 'Opportunity: Next.js rebuild'],
+          status: 'DRAFT',
+        },
+      ],
+      interactions: [
+        {
+          type: 'NOTE',
+          note: 'Completed manual website audit. Identified 5.8s LCP latency and layout shifts during mobile checkout.',
+          occurredAt: new Date(Date.now() - 3 * 86400000),
+        },
+        {
+          type: 'NOTE',
+          note: 'Prepared 3-minute Loom demo outline showcasing sub-second Next.js commerce rebuild.',
+          occurredAt: new Date(Date.now() - 2 * 86400000),
+        },
+      ],
     },
     {
       company: 'Apex Logistics Software (DEMO)',
@@ -591,7 +626,7 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
       source: 'SaaS Directory Audit',
       problem: 'Outdated 2018 WordPress landing page with generic hero typography and unclear value proposition for enterprise logistics managers.',
       opportunity: 'Landing page redesign with interactive ROI calculator and modern Tailwind UI design system.',
-      qualificationScore: 78,
+      qualificationScore: 63,
       qualificationBreakdown: {
         websiteUxScore: 6,
         mobileExperienceScore: 5,
@@ -606,10 +641,19 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
           'High opportunity for interactive ROI calculator widget',
           'Strong match for web application / redesign services',
         ],
-        totalScore: 78,
+        totalScore: 63,
       },
       status: 'OUTREACH_DRAFT',
+      nextFollowUpAt: new Date(Date.now() + 2 * 86400000), // Upcoming in 2 days
+      lastInteractionAt: new Date(Date.now() - 1 * 86400000),
       outreachDraft: `Hi Rachel,\n\nI came across Apex Logistics while researching supply chain analytics tools. The core product capabilities are impressive, but I noticed the main hero section doesn't immediately showcase your automated route dispatcher in action.\n\nAdding an interactive freight savings calculator and a modernized Bento-grid layout could significantly boost your enterprise demo request rates.\n\nI put together a quick interactive mockup of what this could look like—happy to share it if you'd like to take a look!`,
+      interactions: [
+        {
+          type: 'NOTE',
+          note: 'Audited SaaS landing page. Identified need for interactive freight savings calculator.',
+          occurredAt: new Date(Date.now() - 1 * 86400000),
+        },
+      ],
     },
     {
       company: 'Verve Health Clinic (DEMO)',
@@ -621,7 +665,7 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
       source: 'Google Maps Audit',
       problem: 'Online appointment booking iframe is broken on iOS Safari and mobile layout overflows viewport horizontally.',
       opportunity: 'Custom online booking portal with SMS confirmation integration and responsive calendar scheduling.',
-      qualificationScore: 74,
+      qualificationScore: 67,
       qualificationBreakdown: {
         websiteUxScore: 4,
         mobileExperienceScore: 3,
@@ -635,9 +679,19 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
           'Horizontal scrolling issues on screens under 390px width',
           'Call-to-action is unclear or buried below fold',
         ],
-        totalScore: 74,
+        totalScore: 67,
       },
-      status: 'RESEARCHING',
+      status: 'CONTACTED',
+      nextFollowUpAt: new Date(Date.now() - 2 * 86400000), // Overdue
+      lastInteractionAt: new Date(Date.now() - 5 * 86400000),
+      outreachDraft: 'Hi Dr. Chen, noticed Verve Health Clinic\'s booking portal has an iframe rendering issue on iOS Safari...',
+      interactions: [
+        {
+          type: 'LINKEDIN_MANUAL',
+          note: 'Manually sent personalized connection note and observation regarding mobile appointment iframe bug.',
+          occurredAt: new Date(Date.now() - 5 * 86400000),
+        },
+      ],
     },
     {
       company: 'Synapse Design Studio (DEMO)',
@@ -649,7 +703,7 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
       source: 'Awwwards Nominees',
       problem: 'Portfolio animation lags on low-power devices due to heavy unoptimized Three.js shaders.',
       opportunity: 'Performance optimization, WebGL memory cleanup, and fast mobile fallbacks.',
-      qualificationScore: 65,
+      qualificationScore: 44,
       qualificationBreakdown: {
         websiteUxScore: 8,
         mobileExperienceScore: 6,
@@ -662,10 +716,132 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
           'Sub-optimal page load and performance metrics (WebGL shader lag)',
           'Mobile memory spikes on 3D portfolio assets',
         ],
+        totalScore: 44,
+      },
+      status: 'REPLIED',
+      nextFollowUpAt: new Date(Date.now() + 3 * 86400000), // Upcoming in 3 days
+      lastInteractionAt: new Date(Date.now() - 1 * 86400000),
+      outreachDraft: 'Hi Oliver, huge fan of Synapse’s design work. Noticed the 3D portfolio hero has a quick GPU optimization opportunity on mobile...',
+      interactions: [
+        {
+          type: 'LINKEDIN_MANUAL',
+          note: 'Sent manual outreach discussing Three.js shader memory footprint and frame drops.',
+          occurredAt: new Date(Date.now() - 4 * 86400000),
+        },
+        {
+          type: 'EMAIL',
+          note: 'Oliver replied: "Thanks for the benchmark notes! Would love to see the shader optimizations you mentioned."',
+          occurredAt: new Date(Date.now() - 1 * 86400000),
+        },
+      ],
+    },
+    {
+      company: 'Zenith Health Labs (DEMO)',
+      website: 'https://demo-zenithhealthlabs.com',
+      industry: 'Biotech / Healthcare',
+      location: 'Boston, MA',
+      contactName: 'Sarah Jenkins',
+      contactRole: 'Head of Digital Products',
+      source: 'TechCrunch Article',
+      problem: 'Patient onboarding portal lacks HIPAA-compliant mobile responsive design and fast form validation.',
+      opportunity: 'Next.js + Tailwind patient intake application with end-to-end Zod validation and sub-second transitions.',
+      qualificationScore: 72,
+      qualificationBreakdown: {
+        websiteUxScore: 4,
+        mobileExperienceScore: 3,
+        performanceScore: 4,
+        visualQualityScore: 5,
+        ctaClarityScore: 3,
+        conversionClarityScore: 3,
+        serviceFit: 'HIGH',
+        reasons: [
+          'High mobile form abandonment rate on onboarding intake',
+          'Outdated patient portal UX lacking responsive validation',
+          'Strong match for web application / redesign services',
+        ],
+        totalScore: 72,
+      },
+      status: 'MEETING',
+      nextFollowUpAt: new Date(Date.now() + 1 * 86400000), // Upcoming tomorrow
+      lastInteractionAt: new Date(Date.now() - 1 * 86400000),
+      interactions: [
+        {
+          type: 'MEETING',
+          note: 'Discovery call held with Sarah Jenkins. Discussed 4-week sprint to rebuild patient onboarding flow.',
+          occurredAt: new Date(Date.now() - 1 * 86400000),
+        },
+      ],
+    },
+    {
+      company: 'OmniFlow Cloud Solutions (DEMO)',
+      website: 'https://demo-omniflowcloud.io',
+      industry: 'Cloud Infrastructure / SaaS',
+      location: 'San Jose, CA',
+      contactName: 'David Zhang',
+      contactRole: 'Co-Founder & VP Engineering',
+      source: 'ProductHunt',
+      problem: 'Internal cloud analytics dashboard is slow with large dataset tables and lacks CSV export and dark mode.',
+      opportunity: 'High-performance React dashboard with virtualization and server-sent telemetry events.',
+      qualificationScore: 65,
+      qualificationBreakdown: {
+        websiteUxScore: 5,
+        mobileExperienceScore: 5,
+        performanceScore: 4,
+        visualQualityScore: 5,
+        ctaClarityScore: 4,
+        conversionClarityScore: 4,
+        serviceFit: 'HIGH',
+        reasons: [
+          'Table virtualization needed for large telemetry datasets',
+          'High customer demand for responsive cloud metrics viewer',
+        ],
         totalScore: 65,
       },
-      status: 'CONTACTED',
-      outreachDraft: 'Hi Oliver, huge fan of Synapse’s design work. Noticed the 3D portfolio hero has a quick GPU optimization opportunity on mobile...',
+      status: 'PROPOSAL',
+      nextFollowUpAt: new Date(Date.now() + 4 * 86400000),
+      lastInteractionAt: new Date(Date.now() - 2 * 86400000),
+      interactions: [
+        {
+          type: 'EMAIL',
+          note: 'Delivered detailed proposal and architecture specification for telemetry dashboard rebuild ($4,500 fixed scope).',
+          occurredAt: new Date(Date.now() - 2 * 86400000),
+        },
+      ],
+    },
+    {
+      company: 'Starlight Digital Goods (DEMO)',
+      website: 'https://demo-starlightdigital.co',
+      industry: 'Creator Economy / E-commerce',
+      location: 'Austin, TX',
+      contactName: 'Elena Morris',
+      contactRole: 'Founder',
+      source: 'Twitter / X',
+      problem: 'Creator digital asset storefront was dropping carts due to unoptimized Stripe checkout iframe.',
+      opportunity: 'Custom Stripe Elements checkout integration with automated download delivery.',
+      qualificationScore: 65,
+      qualificationBreakdown: {
+        websiteUxScore: 5,
+        mobileExperienceScore: 5,
+        performanceScore: 5,
+        visualQualityScore: 5,
+        ctaClarityScore: 4,
+        conversionClarityScore: 3,
+        serviceFit: 'HIGH',
+        reasons: [
+          'Stripe Elements custom checkout integration needed',
+          'Cart abandonment fixed with instant delivery flow',
+        ],
+        totalScore: 65,
+      },
+      status: 'WON',
+      lastInteractionAt: new Date(Date.now() - 5 * 86400000),
+      interactions: [
+        {
+          type: 'NOTE',
+          note: 'Client signed agreement and paid initial deposit. Sprint underway.',
+          occurredAt: new Date(Date.now() - 5 * 86400000),
+        },
+      ],
     },
     {
       company: 'Peak Flow Analytics (DEMO)',
@@ -677,7 +853,7 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
       source: 'LinkedIn Post',
       problem: 'Landing page copy is clear, but lacks self-serve interactive product preview.',
       opportunity: 'Interactive sandbox demo dashboard component.',
-      qualificationScore: 52,
+      qualificationScore: 36,
       qualificationBreakdown: {
         websiteUxScore: 7,
         mobileExperienceScore: 8,
@@ -689,14 +865,27 @@ This prevents invalid combinations (like 'isLoading === true && isSuccess === tr
         reasons: [
           'Site is reasonably well-optimized; opportunity is in interactive product sandbox widgets',
         ],
-        totalScore: 52,
+        totalScore: 36,
       },
       status: 'DISCOVERED',
+      interactions: [],
     },
   ];
 
   for (const lead of leadsData) {
-    await prisma.lead.create({ data: lead });
+    const { interactions, ...leadCoreData } = lead;
+    const createdLead = await prisma.lead.create({ data: leadCoreData as any });
+
+    if (interactions && interactions.length > 0) {
+      for (const interaction of interactions) {
+        await prisma.leadInteraction.create({
+          data: {
+            leadId: createdLead.id,
+            ...interaction,
+          },
+        });
+      }
+    }
   }
 
   // 6. Seed 10 Internships with Match Scores & Requirements

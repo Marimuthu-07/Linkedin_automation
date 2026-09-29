@@ -123,14 +123,100 @@ All endpoints are prefixed with `/api`. All inputs are strictly validated agains
 
 ---
 
-## Leads (`/api/leads`)
-- `GET /api/leads`: List leads (filters: `status`, `search`).
-- `POST /api/leads`: Create lead.
-- `GET /api/leads/:id`: Get lead by ID.
-- `PATCH /api/leads/:id`: Update lead.
-- `DELETE /api/leads/:id`: Delete lead.
-- `POST /api/leads/score`: Compute transparent qualification score.
-- `POST /api/leads/:id/generate-outreach`: AI generates personalized value pitch draft.
+## Lead Generation & Outreach Engine (`/api/leads`)
+
+### Endpoints
+- `GET /api/leads/stats`: Returns full pipeline metrics and follow-up KPIs:
+  ```json
+  {
+    "totalLeads": 15,
+    "discovered": 2,
+    "researching": 1,
+    "qualified": 3,
+    "outreachDraft": 2,
+    "contacted": 3,
+    "replied": 2,
+    "meeting": 1,
+    "proposal": 1,
+    "won": 1,
+    "lost": 0,
+    "archived": 0,
+    "averageQualificationScore": 76.8,
+    "followUpsDueToday": 2,
+    "followUpsOverdue": 1,
+    "followUpsUpcoming7Days": 3,
+    "conversionRates": {
+      "replyRate": 66.67,
+      "meetingRate": 33.33,
+      "proposalRate": 33.33,
+      "winRate": 33.33
+    }
+  }
+  ```
+
+- `GET /api/leads`: Paginated list of freelance leads.
+  - **Query Parameters**:
+    - `status`: Filter by `LeadStatus` enum or `ALL`.
+    - `industry`: Filter by industry keyword or `ALL`.
+    - `source`: Filter by acquisition source.
+    - `minScore` / `maxScore`: Qualification score range boundaries (0–100).
+    - `search`: Search across company, contact, role, industry, location, problem, opportunity, and notes.
+    - `followUpFilter`: `due_today` | `overdue` | `upcoming_7_days` | `future` | `none` | `all`.
+    - `sortBy`: `qualificationScore` | `createdAt` | `updatedAt` | `nextFollowUpAt` | `company`.
+    - `sortOrder`: `asc` | `desc`.
+    - `page`: Integer $\ge 1$ (default: `1`).
+    - `limit`: Integer between `1` and `100` (default: `20`).
+  - **Response**: `{ items: Lead[], total: number, page: number, limit: number, totalPages: number }`
+
+- `GET /api/leads/:id`: Get detailed lead record including ordered `interactions` history.
+
+- `POST /api/leads`: Create a new prospect lead with automated audit opportunity scoring.
+  - **Required**: `company`, `website` (valid URL), `industry`, `problem`, `opportunity`.
+  - **Optional**: `location`, `contactName`, `contactRole`, `linkedinUrl`, `companyLinkedinUrl`, `source`, `notes`, `qualificationScore`, `qualificationBreakdown`, `status`, `nextFollowUpAt`.
+
+- `PATCH /api/leads/:id`: Partial update of lead fields.
+
+- `PATCH /api/leads/:id/status`: Explicit status transition endpoint.
+  - **Body**: `{ "status": "OUTREACH_DRAFT" }`
+  - **Validation**: Enforces `VALID_LEAD_TRANSITIONS`. Returns HTTP 400 with allowed transitions if invalid.
+
+- `PATCH /api/leads/:id/follow-up`: Schedule follow-up date and optionally log an interaction note.
+  - **Body**: `{ "nextFollowUpAt": "2026-10-02T10:00:00.000Z", "note": "Check in on proposal" }`
+  - **Behavior**: Updates `nextFollowUpAt`, logs a `NOTE` interaction if note text is provided, and updates `lastInteractionAt`.
+
+- `POST /api/leads/score`: Compute transparent deterministic qualification heuristic without persisting.
+  - **Body**: `{ "websiteUxScore": 5, "mobileExperienceScore": 4, "performanceScore": 3, "visualQualityScore": 6, "ctaClarityScore": 4, "conversionClarityScore": 3, "serviceFit": "HIGH", "identifiedIssues": ["Unclear CTA"] }`
+  - **Response**: `{ "qualificationScore": 68, "qualificationBreakdown": { "websiteUxScore": 5, ..., "serviceFit": "HIGH", "reasons": [...], "totalScore": 68 } }`
+
+- `POST /api/leads/:id/generate-outreach`: AI generates grounded outreach drafts and 3 multi-length variants.
+  - **Body (optional)**: `{ "variantType": "DETAILED" }`
+  - **Response**: `{ "lead": Lead, "draft": string, "breakdown": object, "personalizationBasis": string[], "variants": LeadOutreachVariant[], "guidance": string }`
+  - **Anti-Hallucination**: Grounded strictly in verified lead facts and audit observations. Never sends messages automatically.
+
+- `GET /api/leads/:id/interactions`: Retrieve chronological interaction history for a lead.
+
+- `POST /api/leads/:id/interactions`: Log a manual interaction touchpoint.
+  - **Body**: `{ "type": "LINKEDIN_MANUAL", "note": "Sent connection request manually", "occurredAt": "2026-09-29T10:00:00.000Z" }`
+  - **Types**: `NOTE`, `EMAIL`, `CALL`, `MEETING`, `LINKEDIN_MANUAL`, `OTHER`.
+
+- `DELETE /api/leads/:id/interactions/:interactionId`: Delete a single interaction log entry.
+
+- `DELETE /api/leads/:id`: Delete lead record and cascade deletion of related interaction entries.
+
+### Valid Lead Status Transitions
+| From Status | Allowed Target Statuses |
+|---|---|
+| `DISCOVERED` | `RESEARCHING`, `QUALIFIED`, `OUTREACH_DRAFT`, `ARCHIVED` |
+| `RESEARCHING` | `QUALIFIED`, `OUTREACH_DRAFT`, `DISCOVERED`, `ARCHIVED` |
+| `QUALIFIED` | `OUTREACH_DRAFT`, `CONTACTED`, `RESEARCHING`, `ARCHIVED` |
+| `OUTREACH_DRAFT` | `CONTACTED`, `QUALIFIED`, `ARCHIVED` |
+| `CONTACTED` | `REPLIED`, `MEETING`, `OUTREACH_DRAFT`, `LOST`, `ARCHIVED` |
+| `REPLIED` | `MEETING`, `PROPOSAL`, `CONTACTED`, `LOST`, `ARCHIVED` |
+| `MEETING` | `PROPOSAL`, `WON`, `LOST`, `REPLIED`, `ARCHIVED` |
+| `PROPOSAL` | `WON`, `LOST`, `MEETING`, `ARCHIVED` |
+| `WON` | `ARCHIVED` |
+| `LOST` | `DISCOVERED`, `QUALIFIED`, `ARCHIVED` |
+| `ARCHIVED` | `DISCOVERED`, `RESEARCHING`, `QUALIFIED` |
 
 ---
 

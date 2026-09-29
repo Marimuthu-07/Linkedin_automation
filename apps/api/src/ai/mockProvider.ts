@@ -82,7 +82,7 @@ export class MockAIProvider implements AIProvider {
     // 4. Networking Outreach Schema
     if (
       shape.messageDraft ||
-      shape.isLimitedPersonalization ||
+      (shape.message && !shape.fullDraft && !shape.closingQuestion) ||
       schema === (generateNetworkingMessageOutputSchema as any)
     ) {
       const nameMatch = prompt.match(/Name:\s*([^\n]+)/i);
@@ -130,14 +130,73 @@ export class MockAIProvider implements AIProvider {
     if (
       shape.problemStatement ||
       shape.closingQuestion ||
+      shape.fullDraft ||
       schema === (generateLeadOutreachOutputSchema as any)
     ) {
+      const compMatch = prompt.match(/Company:\s*([^\n]+)/i);
+      const nameMatch = prompt.match(/Contact Name:\s*([^\n]+)/i);
+      const webMatch = prompt.match(/Website:\s*([^\n]+)/i);
+      const probMatch = prompt.match(/Observed Problem:\s*([^\n]+)/i);
+      const oppMatch = prompt.match(/Opportunity:\s*([^\n]+)/i);
+
+      const company = compMatch ? compMatch[1].replace(/\(DEMO\)/g, '').trim() : 'your company';
+      const contactName = nameMatch && nameMatch[1].trim() !== 'None' && !nameMatch[1].includes('Founder /') ? nameMatch[1].trim() : '';
+      const website = webMatch ? webMatch[1].trim() : '';
+      const problem = probMatch ? probMatch[1].trim() : 'mobile checkout latency and layout shifts';
+      const opportunity = oppMatch ? oppMatch[1].trim() : 'modern frontend redesign with sub-second page transitions';
+
+      const greeting = contactName ? `Hi ${contactName}` : 'Hi there';
+
+      const personalizationBasis: string[] = [];
+      if (company && company !== 'your company') personalizationBasis.push(`Company: ${company}`);
+      if (contactName) personalizationBasis.push(`Contact: ${contactName}`);
+      if (website) personalizationBasis.push(`Website: ${website}`);
+      if (problem) personalizationBasis.push(`Observed Problem: ${problem.slice(0, 80)}`);
+      if (opportunity) personalizationBasis.push(`Opportunity: ${opportunity.slice(0, 80)}`);
+
+      const observation = `I noticed ${company}'s website (${website || 'storefront'}) has ${problem.slice(0, 90)}.`;
+      const problemStatement = `This increases friction for users and directly impacts conversion rates.`;
+      const valueProposition = `A focused implementation around ${opportunity.slice(0, 100)} can resolve this with measurable speed gains.`;
+      const closingQuestion = `Would you be open to a quick 3-minute Loom video breaking down 3 specific fixes?`;
+
+      const connectionBody = `${greeting}, noticed ${company}'s site while auditing web performance. Spotted a quick fix for ${problem.slice(0, 60)}. Would love to connect!`;
+      const shortBody = `${greeting},\n\nI was analyzing ${company}'s site and noticed ${problem.slice(0, 90)}.\n\nWe recently tackled a similar bottleneck using ${opportunity.slice(0, 70)}.\n\nWould you be open to a 3-minute video breakdown of 3 quick fixes?`;
+      const detailedBody = `${greeting},\n\nI was reviewing ${company}'s website (${website}) earlier today and noticed ${problem}.\n\nThis introduces friction right in the user experience and impacts conversion clarity.\n\n${opportunity}.\n\nWould you be open to a quick 3-minute Loom video walking through 3 specific high-impact fixes you can implement right away?`;
+
+      const variants = [
+        {
+          type: 'CONNECTION' as const,
+          body: connectionBody,
+          personalizationBasis,
+          status: 'DRAFT' as const,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          type: 'SHORT' as const,
+          body: shortBody,
+          personalizationBasis,
+          status: 'DRAFT' as const,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          type: 'DETAILED' as const,
+          body: detailedBody,
+          personalizationBasis,
+          status: 'DRAFT' as const,
+          createdAt: new Date().toISOString(),
+        },
+      ];
+
       const mockResult = {
-        observation: 'I noticed your mobile checkout takes over 5 seconds to load with significant layout shifts.',
-        problemStatement: 'This increases user friction and directly harms mobile conversion rates.',
-        valueProposition: 'I recently built a Next.js template that achieves sub-second page loads and improved conversion by 28%.',
-        closingQuestion: 'Would you be open to a quick 3-minute video walkthrough of the top 3 fixes?',
-        fullDraft: `Hi,\n\nI was reviewing your storefront earlier today and noticed the mobile checkout takes ~5.2s to render with noticeable layout shifts on smaller screens.\n\nThis introduces friction right at the highest-intent stage of your funnel.\n\nI recently engineered a sub-second Next.js architecture that improved conversion by 28% for a similar brand. Would you be open to a quick 3-minute Loom video breaking down 3 high-impact frontend fixes you can implement right away?`,
+        observation,
+        problemStatement,
+        valueProposition,
+        closingQuestion,
+        fullDraft: detailedBody,
+        personalizationBasis,
+        variants,
+        isLimitedPersonalization: personalizationBasis.length < 2,
+        warnings: personalizationBasis.length < 2 ? ['Limited verified observations — review carefully before sending.'] : [],
       };
       return schema.parse(mockResult);
     }

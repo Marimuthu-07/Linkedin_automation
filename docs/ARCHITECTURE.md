@@ -127,7 +127,84 @@ The `generateDeterministicInsights` function synthesizes rule-based findings dir
 
 ---
 
-## 5. Monorepo Structure
+## 5. Lead Generation & Freelance Outreach Engine Architecture (Phase 5)
+
+### State Machine Transitions
+The Lead Pipeline enforces explicit lifecycle progression across 11 states:
+
+```mermaid
+graph TD
+  DISCOVERED --> RESEARCHING
+  DISCOVERED --> QUALIFIED
+  DISCOVERED --> OUTREACH_DRAFT
+  DISCOVERED --> ARCHIVED
+  RESEARCHING --> QUALIFIED
+  RESEARCHING --> OUTREACH_DRAFT
+  RESEARCHING --> DISCOVERED
+  RESEARCHING --> ARCHIVED
+  QUALIFIED --> OUTREACH_DRAFT
+  QUALIFIED --> CONTACTED
+  QUALIFIED --> RESEARCHING
+  QUALIFIED --> ARCHIVED
+  OUTREACH_DRAFT --> CONTACTED
+  OUTREACH_DRAFT --> QUALIFIED
+  OUTREACH_DRAFT --> ARCHIVED
+  CONTACTED --> REPLIED
+  CONTACTED --> MEETING
+  CONTACTED --> OUTREACH_DRAFT
+  CONTACTED --> LOST
+  CONTACTED --> ARCHIVED
+  REPLIED --> MEETING
+  REPLIED --> PROPOSAL
+  REPLIED --> CONTACTED
+  REPLIED --> LOST
+  REPLIED --> ARCHIVED
+  MEETING --> PROPOSAL
+  MEETING --> WON
+  MEETING --> LOST
+  MEETING --> REPLIED
+  MEETING --> ARCHIVED
+  PROPOSAL --> WON
+  PROPOSAL --> LOST
+  PROPOSAL --> MEETING
+  PROPOSAL --> ARCHIVED
+  WON --> ARCHIVED
+  LOST --> DISCOVERED
+  LOST --> QUALIFIED
+  LOST --> ARCHIVED
+  ARCHIVED --> DISCOVERED
+  ARCHIVED --> RESEARCHING
+  ARCHIVED --> QUALIFIED
+```
+
+### Deterministic Lead Opportunity & Qualification Heuristic
+Lead scoring is computed 100% deterministically using `calculateLeadQualification()` without external AI hallucinations:
+- **Technical Opportunity Component (max 80 points)**:
+  - Conversion & CTA Clarity ($30\%$): $(10 - \text{cta}) \times 1.5 + (10 - \text{conversion}) \times 1.5$ (max 30 pts)
+  - Mobile & Performance ($30\%$): $(10 - \text{mobile}) \times 1.5 + (10 - \text{perf}) \times 1.5$ (max 30 pts)
+  - Website UX & Visuals ($20\%$): $(10 - \text{visual}) \times 1.0 + (10 - \text{ux}) \times 1.0$ (max 20 pts)
+- **Service Fit Points ($20\%$)**: `HIGH` = 20 pts, `MEDIUM` = 12 pts, `LOW` = 4 pts.
+- **Total Qualification Score**: Sum of technical opportunity points + service fit points, clamped between 0 and 100.
+- **Transparent Reasons**: The calculation generates human-readable diagnostic reasons for each dimension below 6/10.
+
+### Grounded AI Outreach Drafting with Multi-Length Variants
+1. The AI provider is prompted with verified lead facts (`company`, `website`, `industry`, `location`, `contactName`, `contactRole`, `problem`, `opportunity`, `auditReasons`, `serviceFit`).
+2. Generates 3 distinct grounded variants:
+   - **`CONNECTION`**: Ultra-short connection request note ($\le 300$ characters).
+   - **`SHORT`**: Concise value pitch email/DM (500–800 characters) offering a 3-minute Loom video breakdown.
+   - **`DETAILED`**: Comprehensive consultative outreach (800–1200 characters) referencing observed friction points and proposed solutions.
+3. Every draft includes explicit `personalizationBasis` citations.
+4. The output is validated strictly with Zod (`generateLeadOutreachOutputSchema`).
+
+### Manual Action & Human-in-the-Loop Interaction History
+- The application never sends emails or LinkedIn messages directly.
+- The UI provides copy actions, editable textareas, and direct external LinkedIn launchers.
+- User touchpoints are recorded via `LeadInteraction` (`NOTE`, `EMAIL`, `CALL`, `MEETING`, `LINKEDIN_MANUAL`, `OTHER`).
+- Scheduling follow-ups computes deterministic urgency badges (`OVERDUE`, `DUE_TODAY`, `UPCOMING_7_DAYS`, `FUTURE`, `NONE`).
+
+---
+
+## 6. Monorepo Structure
 
 ```
 root/

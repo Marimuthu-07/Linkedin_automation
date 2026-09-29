@@ -1,5 +1,5 @@
 import { LeadQualificationBreakdown, MetricComparison, DeterministicInsight, MetricDefinition } from '../types/models.js';
-import { NetworkingStatus, ContentStatus, AnalyticsPeriod, AnalyticsGroupBy } from '../types/enums.js';
+import { NetworkingStatus, ContentStatus, LeadStatus, AnalyticsPeriod, AnalyticsGroupBy } from '../types/enums.js';
 
 /**
  * Valid state transitions for the Human-In-The-Loop Networking Pipeline.
@@ -109,6 +109,90 @@ export function isValidContentStatusTransition(
 ): boolean {
   if (from === to) return true;
   const allowed = VALID_CONTENT_TRANSITIONS[from];
+  return allowed ? allowed.includes(to) : false;
+}
+
+/**
+ * Valid state transitions for the Human-In-The-Loop Lead Pipeline.
+ *
+ * Lifecycle:
+ * DISCOVERED -> RESEARCHING -> QUALIFIED -> OUTREACH_DRAFT -> CONTACTED -> REPLIED -> MEETING -> PROPOSAL -> WON / LOST
+ */
+export const VALID_LEAD_TRANSITIONS: Record<LeadStatus, LeadStatus[]> = {
+  [LeadStatus.DISCOVERED]: [
+    LeadStatus.RESEARCHING,
+    LeadStatus.QUALIFIED,
+    LeadStatus.OUTREACH_DRAFT,
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.RESEARCHING]: [
+    LeadStatus.QUALIFIED,
+    LeadStatus.DISCOVERED,
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.QUALIFIED]: [
+    LeadStatus.OUTREACH_DRAFT,
+    LeadStatus.CONTACTED,
+    LeadStatus.RESEARCHING,
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.OUTREACH_DRAFT]: [
+    LeadStatus.CONTACTED,
+    LeadStatus.QUALIFIED,
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.CONTACTED]: [
+    LeadStatus.REPLIED,
+    LeadStatus.MEETING,
+    LeadStatus.LOST,
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.REPLIED]: [
+    LeadStatus.MEETING,
+    LeadStatus.PROPOSAL,
+    LeadStatus.CONTACTED,
+    LeadStatus.LOST,
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.MEETING]: [
+    LeadStatus.PROPOSAL,
+    LeadStatus.WON,
+    LeadStatus.LOST,
+    LeadStatus.REPLIED,
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.PROPOSAL]: [
+    LeadStatus.WON,
+    LeadStatus.LOST,
+    LeadStatus.MEETING,
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.WON]: [
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.LOST]: [
+    LeadStatus.RESEARCHING,
+    LeadStatus.QUALIFIED,
+    LeadStatus.DISCOVERED,
+    LeadStatus.ARCHIVED,
+  ],
+  [LeadStatus.ARCHIVED]: [
+    LeadStatus.DISCOVERED,
+    LeadStatus.RESEARCHING,
+    LeadStatus.QUALIFIED,
+  ],
+};
+
+/**
+ * Validates whether a requested lead transition from `from` status to `to` status is allowed.
+ * Returns true if the status is unchanged (idempotent) or explicitly listed in VALID_LEAD_TRANSITIONS.
+ */
+export function isValidLeadStatusTransition(
+  from: LeadStatus,
+  to: LeadStatus
+): boolean {
+  if (from === to) return true;
+  const allowed = VALID_LEAD_TRANSITIONS[from];
   return allowed ? allowed.includes(to) : false;
 }
 
@@ -275,6 +359,36 @@ export function calculateLeadQualification(input: LeadScoringInput): LeadQualifi
     reasons,
     totalScore,
   };
+}
+
+/**
+ * Calculates a safe conversion rate percentage, returning null when the denominator is 0.
+ */
+export function calculateConversionRate(numerator: number, denominator: number): number | null {
+  if (typeof denominator !== 'number' || isNaN(denominator) || denominator <= 0) {
+    return null;
+  }
+  if (typeof numerator !== 'number' || isNaN(numerator) || numerator < 0) {
+    return 0;
+  }
+  const rawRate = (numerator / denominator) * 100;
+  return Math.round(rawRate * 10) / 10;
+}
+
+export function calculateLeadReplyRate(replied: number, contacted: number): number | null {
+  return calculateConversionRate(replied, contacted);
+}
+
+export function calculateLeadMeetingRate(meeting: number, contacted: number): number | null {
+  return calculateConversionRate(meeting, contacted);
+}
+
+export function calculateLeadProposalRate(proposal: number, contacted: number): number | null {
+  return calculateConversionRate(proposal, contacted);
+}
+
+export function calculateLeadWinRate(won: number, contacted: number): number | null {
+  return calculateConversionRate(won, contacted);
 }
 
 export interface InternshipMatchingCriteria {

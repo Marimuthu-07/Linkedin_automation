@@ -7,6 +7,9 @@ import {
   ContentStatus,
   ContentCategory,
   LeadStatus,
+  LeadInteractionType,
+  LeadOutreachVariantType,
+  LeadOutreachStatus,
   InternshipStatus,
   TaskType,
   TaskStatus,
@@ -176,6 +179,14 @@ export const updateContentMetricsSchema = createContentMetricsSchema;
 
 
 // Lead Schemas
+export const leadOutreachVariantSchema = z.object({
+  type: z.nativeEnum(LeadOutreachVariantType),
+  body: z.string().min(1, 'Outreach body is required'),
+  personalizationBasis: z.array(z.string()).default([]),
+  status: z.nativeEnum(LeadOutreachStatus).default(LeadOutreachStatus.DRAFT),
+  createdAt: z.string().optional(),
+});
+
 export const createLeadSchema = z.object({
   company: z.string().min(1, 'Company name is required').max(100),
   website: urlSchema,
@@ -183,8 +194,8 @@ export const createLeadSchema = z.object({
   location: z.string().max(100).optional().nullable(),
   contactName: z.string().max(100).optional().nullable(),
   contactRole: z.string().max(100).optional().nullable(),
-  linkedinUrl: linkedinUrlSchema.optional().nullable(),
-  companyLinkedinUrl: linkedinUrlSchema.optional().nullable(),
+  linkedinUrl: optionalLinkedinUrlSchema,
+  companyLinkedinUrl: optionalLinkedinUrlSchema,
   source: z.string().default('Manual Research'),
   problem: z.string().min(3, 'Observed problem/gap is required').max(1000),
   opportunity: z.string().min(3, 'Service opportunity is required').max(1000),
@@ -202,10 +213,39 @@ export const createLeadSchema = z.object({
   }).optional().nullable(),
   status: z.nativeEnum(LeadStatus).default(LeadStatus.DISCOVERED),
   notes: z.string().max(2000).optional().nullable(),
-  outreachDraft: z.string().max(2000).optional().nullable(),
+  outreachDraft: z.string().max(3000).optional().nullable(),
+  outreachVariants: z.array(leadOutreachVariantSchema).optional().nullable(),
+  nextFollowUpAt: z.string().datetime().optional().nullable(),
+  lastInteractionAt: z.string().datetime().optional().nullable(),
 });
 
 export const updateLeadSchema = createLeadSchema.partial();
+
+export const updateLeadStatusSchema = z.object({
+  status: z.nativeEnum(LeadStatus),
+});
+
+export const leadFollowUpSchema = z.object({
+  nextFollowUpAt: z.string().datetime().nullable(),
+  note: z.string().max(1000).optional().nullable(),
+});
+
+export const scoreLeadInputSchema = z.object({
+  websiteUxScore: z.number().min(0).max(10).default(5),
+  mobileExperienceScore: z.number().min(0).max(10).default(5),
+  performanceScore: z.number().min(0).max(10).default(5),
+  visualQualityScore: z.number().min(0).max(10).default(5),
+  ctaClarityScore: z.number().min(0).max(10).default(5),
+  conversionClarityScore: z.number().min(0).max(10).default(5),
+  serviceFit: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
+  identifiedIssues: z.array(z.string()).default([]),
+});
+
+export const createLeadInteractionSchema = z.object({
+  type: z.nativeEnum(LeadInteractionType).default(LeadInteractionType.NOTE),
+  note: z.string().min(1, 'Interaction note is required').max(3000),
+  occurredAt: z.string().datetime().optional().nullable(),
+});
 
 // Internship Schemas
 export const createInternshipSchema = z.object({
@@ -353,12 +393,19 @@ export const generateNetworkingMessageOutputSchema = z.object({
 
 
 export const generateLeadOutreachInputSchema = z.object({
-  company: z.string(),
-  website: z.string(),
-  contactName: z.string().optional(),
-  problem: z.string(),
-  opportunity: z.string(),
-  serviceFit: z.string(),
+  company: z.string().min(1, 'Company is required'),
+  website: z.string().min(1, 'Website is required'),
+  industry: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  contactName: z.string().optional().nullable(),
+  contactRole: z.string().optional().nullable(),
+  problem: z.string().min(1, 'Problem is required'),
+  opportunity: z.string().min(1, 'Opportunity is required'),
+  serviceFit: z.string().optional().nullable(),
+  auditFindings: z.array(z.string()).default([]),
+  qualificationReasons: z.array(z.string()).default([]),
+  identifiedIssues: z.array(z.string()).default([]),
+  variantType: z.nativeEnum(LeadOutreachVariantType).optional(),
 });
 
 export const generateLeadOutreachOutputSchema = z.object({
@@ -367,6 +414,10 @@ export const generateLeadOutreachOutputSchema = z.object({
   valueProposition: z.string(),
   closingQuestion: z.string(),
   fullDraft: z.string(),
+  personalizationBasis: z.array(z.string()).default([]),
+  variants: z.array(leadOutreachVariantSchema).default([]),
+  isLimitedPersonalization: z.boolean().default(false),
+  warnings: z.array(z.string()).default([]),
 });
 
 // Analytics Query Schemas

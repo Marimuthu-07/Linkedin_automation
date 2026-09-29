@@ -81,6 +81,27 @@ export enum LeadStatus {
   ARCHIVED = 'ARCHIVED',
 }
 
+export enum LeadInteractionType {
+  NOTE = 'NOTE',
+  EMAIL = 'EMAIL',
+  CALL = 'CALL',
+  MEETING = 'MEETING',
+  LINKEDIN_MANUAL = 'LINKEDIN_MANUAL',
+  OTHER = 'OTHER',
+}
+
+export enum LeadOutreachVariantType {
+  CONNECTION = 'CONNECTION',
+  SHORT = 'SHORT',
+  DETAILED = 'DETAILED',
+}
+
+export enum LeadOutreachStatus {
+  DRAFT = 'DRAFT',
+  USED = 'USED',
+  ARCHIVED = 'ARCHIVED',
+}
+
 export enum InternshipStatus {
   NEW = 'NEW',
   REVIEWING = 'REVIEWING',

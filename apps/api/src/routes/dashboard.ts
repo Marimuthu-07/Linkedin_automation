@@ -56,7 +56,14 @@ dashboardRouter.get('/overview', async (req: Request, res: Response, next: NextF
       // Leads
       prisma.lead.count({ where: { status: 'DISCOVERED' } }),
       prisma.lead.count({ where: { status: 'QUALIFIED' } }),
-      prisma.lead.count({ where: { status: { in: ['OUTREACH_DRAFT', 'CONTACTED', 'REPLIED', 'MEETING', 'PROPOSAL'] } } }),
+      prisma.lead.count({
+        where: {
+          OR: [
+            { nextFollowUpAt: { lte: endOfDay }, status: { notIn: ['WON', 'LOST', 'ARCHIVED'] } },
+            { status: { in: ['OUTREACH_DRAFT', 'CONTACTED', 'REPLIED', 'MEETING', 'PROPOSAL'] } },
+          ],
+        },
+      }),
       prisma.lead.count({ where: { status: { notIn: ['WON', 'LOST', 'ARCHIVED'] } } }),
 
       // Internships

@@ -165,7 +165,7 @@ model AnalyticsSnapshot {
 }
 
 model Lead {
-  id                     String   @id @default(uuid())
+  id                     String            @id @default(uuid())
   company                String
   website                String
   industry               String
@@ -174,22 +174,43 @@ model Lead {
   contactRole            String?
   linkedinUrl            String?
   companyLinkedinUrl     String?
-  source                 String   @default("Manual Research")
+  source                 String            @default("Manual Research")
   problem                String
   opportunity            String
-  qualificationScore     Int      @default(50)
+  qualificationScore     Int               @default(50)
   qualificationBreakdown Json?
-  status                 String   @default("DISCOVERED") // LeadStatus enum string
+  status                 String            @default("DISCOVERED") // LeadStatus enum string
   notes                  String?
   outreachDraft          String?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  outreachVariants       Json?
+  nextFollowUpAt         DateTime?
+  lastInteractionAt      DateTime?
+  interactions           LeadInteraction[]
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
 
   @@index([status])
   @@index([qualificationScore])
+  @@index([nextFollowUpAt])
+  @@index([lastInteractionAt])
   @@index([source])
   @@index([createdAt])
   @@index([updatedAt])
+}
+
+model LeadInteraction {
+  id         String   @id @default(uuid())
+  leadId     String
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  type       String   @default("NOTE") // LeadInteractionType enum string
+  note       String
+  occurredAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([leadId])
+  @@index([occurredAt])
+  @@index([type])
+  @@index([createdAt])
 }
 
 model Internship {

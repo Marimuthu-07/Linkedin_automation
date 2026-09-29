@@ -9,6 +9,10 @@ import {
   ContentMetric,
   ContentStats,
   Lead,
+  LeadStats,
+  LeadInteraction,
+  LeadOutreachVariant,
+  LeadQualificationBreakdown,
   Internship,
   AnalyticsSnapshot,
   Task,
@@ -204,20 +208,64 @@ export const api = {
 
 
   // Leads
-  getLeads: (params?: { status?: string; search?: string }) => {
-    const query = new URLSearchParams(params as any).toString();
+  getLeadStats: () =>
+    request<LeadStats>('/leads/stats'),
+  getLeads: (params?: {
+    status?: string;
+    industry?: string;
+    source?: string;
+    search?: string;
+    minScore?: number;
+    maxScore?: number;
+    followUpFilter?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    const cleanParams: Record<string, string> = {};
+    if (params) {
+      Object.entries(params).forEach(([key, val]) => {
+        if (val !== undefined && val !== null && val !== '') {
+          cleanParams[key] = String(val);
+        }
+      });
+    }
+    const query = new URLSearchParams(cleanParams).toString();
     return request<Lead[]>(`/leads${query ? `?${query}` : ''}`);
   },
+  getLeadById: (id: string) =>
+    request<Lead>(`/leads/${id}`),
   createLead: (data: any) =>
     request<Lead>('/leads', { method: 'POST', body: JSON.stringify(data) }),
   updateLead: (id: string, data: any) =>
     request<Lead>(`/leads/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  updateLeadStatus: (id: string, status: string) =>
+    request<Lead>(`/leads/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  updateLeadFollowUp: (id: string, data: { nextFollowUpAt: string | null; note?: string }) =>
+    request<Lead>(`/leads/${id}/follow-up`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteLead: (id: string) =>
-    request<{ id: string }>(`/leads/${id}`, { method: 'DELETE' }),
+    request<{ id: string; message: string }>(`/leads/${id}`, { method: 'DELETE' }),
   scoreLead: (factors: any) =>
-    request<any>('/leads/score', { method: 'POST', body: JSON.stringify(factors) }),
-  generateLeadOutreach: (id: string) =>
-    request<{ lead: Lead; draft: string; breakdown: any; guidance: string }>(`/leads/${id}/generate-outreach`, { method: 'POST' }),
+    request<{ qualificationScore: number; qualificationBreakdown: LeadQualificationBreakdown } & LeadQualificationBreakdown>(
+      '/leads/score',
+      { method: 'POST', body: JSON.stringify(factors) }
+    ),
+  generateLeadOutreach: (id: string, options?: { variantType?: string }) =>
+    request<{
+      lead: Lead;
+      draft: string;
+      breakdown: any;
+      personalizationBasis: string[];
+      variants: LeadOutreachVariant[];
+      guidance: string;
+    }>(`/leads/${id}/generate-outreach`, { method: 'POST', body: JSON.stringify(options || {}) }),
+  getLeadInteractions: (leadId: string) =>
+    request<LeadInteraction[]>(`/leads/${leadId}/interactions`),
+  createLeadInteraction: (leadId: string, data: { type?: string; note: string; occurredAt?: string }) =>
+    request<LeadInteraction>(`/leads/${leadId}/interactions`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteLeadInteraction: (leadId: string, interactionId: string) =>
+    request<{ message: string; id: string }>(`/leads/${leadId}/interactions/${interactionId}`, { method: 'DELETE' }),
 
   // Internships
   getInternships: (params?: { status?: string; remote?: string; minScore?: string; role?: string; search?: string }) => {

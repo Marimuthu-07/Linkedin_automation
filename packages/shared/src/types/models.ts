@@ -6,6 +6,9 @@ import {
   ContentStatus,
   ContentCategory,
   LeadStatus,
+  LeadInteractionType,
+  LeadOutreachVariantType,
+  LeadOutreachStatus,
   InternshipStatus,
   TaskType,
   TaskStatus,
@@ -156,6 +159,23 @@ export interface LeadQualificationBreakdown {
   totalScore: number; // 0-100
 }
 
+export interface LeadInteraction {
+  id: string;
+  leadId: string;
+  type: LeadInteractionType;
+  note: string;
+  occurredAt: string;
+  createdAt: string;
+}
+
+export interface LeadOutreachVariant {
+  type: LeadOutreachVariantType;
+  body: string;
+  personalizationBasis: string[];
+  status?: LeadOutreachStatus;
+  createdAt?: string;
+}
+
 export interface Lead {
   id: string;
   company: string;
@@ -174,8 +194,31 @@ export interface Lead {
   status: LeadStatus;
   notes?: string | null;
   outreachDraft?: string | null;
+  outreachVariants?: LeadOutreachVariant[] | null;
+  nextFollowUpAt?: string | null;
+  lastInteractionAt?: string | null;
+  interactions?: LeadInteraction[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface LeadStats {
+  totalLeads: number;
+  totalDiscovered: number;
+  totalResearching: number;
+  totalQualified: number;
+  totalOutreachDraft: number;
+  totalContacted: number;
+  totalReplied: number;
+  totalMeeting: number;
+  totalProposal: number;
+  totalWon: number;
+  totalLost: number;
+  totalArchived: number;
+  avgQualificationScore: number;
+  followUpsDueToday: number;
+  followUpsOverdue: number;
+  followUpsUpcoming7Days: number;
 }
 
 export interface Internship {

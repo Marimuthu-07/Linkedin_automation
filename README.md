@@ -130,7 +130,14 @@ npm run build
    - **Interactive Visualizations**: Zero-dependency SVG time-series charts (area and bar charts with hover tooltips), category distribution bars, and funnel breakdowns.
    - **Explainable Metric Explainer Modal**: In-app transparency modal inspecting formulas, numerators, denominators, and null-handling rules.
    - **Zero Scraping & High Integrity**: All metrics derive strictly from locally stored database records and manual logging.
-5. **Freelance Leads**: Transparent qualification breakdown (UX, Mobile, Performance, CTA, Conversion) and personalized value pitch generator.
+5. **Lead Generation & Freelance Outreach Engine (Phase 5 Complete & Verified)**:
+   - **Full 9-Stage HITL Lifecycle**: `DISCOVERED ➔ RESEARCHING ➔ QUALIFIED ➔ OUTREACH_DRAFT ➔ CONTACTED ➔ REPLIED ➔ MEETING ➔ PROPOSAL ➔ WON / LOST` (with strict transition validation and HTTP 400 rejection for invalid jumps).
+   - **Manual Lead Intake & Zero Scraping**: Explicit manual prospect intake interface capturing company, website, industry, observed problems, and service opportunities without automated scrapers or bots.
+   - **Deterministic Opportunity & Qualification Audit**: 6-dimension website opportunity heuristic (`websiteUxScore`, `mobileExperienceScore`, `performanceScore`, `visualQualityScore`, `ctaClarityScore`, `conversionClarityScore` 0–10, max 80 technical opportunity points) combined with service-fit weighting (`HIGH` = 20 pts, `MEDIUM` = 12 pts, `LOW` = 4 pts) and transparent reason explanations.
+   - **Grounded AI Outreach Engine with Variants**: Grounded pitch generator producing 3 distinct variants (`CONNECTION` $\le 300$ chars, `SHORT` 500–800 chars, `DETAILED` 800–1200 chars) with explicit provenance tags (`personalizationBasis`), anti-hallucination guardrails, and zero fabricated claims.
+   - **Human-in-the-Loop Workbench**: 12-section lead workbench with inline draft editing, one-click copy, direct LinkedIn launcher, interaction logging (`NOTE`, `EMAIL`, `CALL`, `MEETING`, `LINKEDIN_MANUAL`, `OTHER`), follow-up scheduler, and integrated task creation.
+   - **Follow-up & Lifecycle Management**: Deterministic due-date calculations (`OVERDUE`, `DUE_TODAY`, `UPCOMING_7_DAYS`, `FUTURE`, `NONE`), quick follow-up presets, and comprehensive pipeline KPI summary cards.
+   - **Dual UI Views**: Interactive 9-stage Kanban pipeline board with drag/advance buttons and searchable, filterable, sortable data table.
 6. **Internship Intelligence**: Official opening monitor with profile match scoring, deadline alerts, and direct career portal links.
 7. **Unified Tasks**: Centralized task queue across all growth workflows.
 8. **Settings**: Student profile, career preferences, target skills, and AI provider selection.
